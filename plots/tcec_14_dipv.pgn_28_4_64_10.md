@@ -1,58 +1,7 @@
-<table width="3000" height="500">
-<tr>
-<td> <img src="tcec_14_divp.pgn_28.4_64/board.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_65/board.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_66/board.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_67/board.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_68/board.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_69/board.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_70/board.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_71/board.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_72/board.svg" width="100%"/> </td>
-<td> <img src="tcec_15_divp.pgn_28.4_73/board.svg" width="100%"/> </td>
-</tr>
-<td> <img src="tcec_14_divp.pgn_28.4_64/Q2.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_65/Q2.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_66/Q2.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_67/Q2.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_68/Q2.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_69/Q2.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_70/Q2.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_71/Q2.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_72/Q2.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_73/Q2.svg" width="100%"/> </td>
-</tr>
-<td> <img src="tcec_14_divp.pgn_28.4_64/N.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_65/N.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_66/N.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_67/N.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_68/N.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_69/N.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_70/N.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_71/N.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_72/N.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_73/N.svg" width="100%"/> </td>
-</tr>
-<td> <img src="tcec_14_divp.pgn_28.4_64/P.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_65/P.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_66/P.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_67/P.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_68/P.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_69/P.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_70/P.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_71/P.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_72/P.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_73/P.svg" width="100%"/> </td>
-</tr>
-<td> <img src="tcec_14_divp.pgn_28.4_64/Q.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_65/Q.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_66/Q.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_67/Q.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_68/Q.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_69/Q.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_70/Q.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_71/Q.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_72/Q.svg" width="100%"/> </td>
-<td> <img src="tcec_14_divp.pgn_28.4_73/Q.svg" width="100%"/> </td>
-</tr>
-</table>
+Black to play
+![](tcec_14_divp.pgn_28.4_64/board.svg)
+
+![](tcec_14_divp.pgn_28.4_64/Q.svg) 
+
+![](tcec_14_divp.pgn_28.4_64/N.svg)
+
