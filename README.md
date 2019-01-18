@@ -1,4 +1,7 @@
-[lc0_analyzer.py](https://gist.github.com/killerducky/9c74bd8efd787aeb6ed6e4c252dbed2d lc0_analyzer.py) takes pgn files or FEN strings, analyzes them with the Lc0 chess engine, and outputs some graphs to visualize Lc0's search. For each position, several graphs are created:
+[lc0_analyzer.py](https://gist.github.com/killerducky/9c74bd8efd787aeb6ed6e4c252dbed2d) takes pgn files or FEN strings, analyzes them with the Lc0 chess engine, and outputs some graphs to visualize Lc0's search. For each position, several graphs are created. See below a giant image (right click open image in new tab to zoom in more). See further below more description of the graphs.
+
+<img src="plots/mattblachess_Bh6+.pgn_None_all.svg"/>
+
 * Value vs Total Nodes - Shows how the value of the moves change over time (Total Nodes searched).
 * Value vs Child Node Visits - Show how the value of the top moves change, but assuming equal time (Child Node Visits) is given to each candidate move.
 * Child Node Visits vs Total Nodes - Shows how much total time (visits) each move is searched.
@@ -28,6 +31,4 @@ Once Lc0 finds the winning Bg7+, it quickly gets all the search time.
 
 The problem is Bg7+ has low Policy, so the search ignores it for a long time.
 
-A giant image of all positions (right click open image in new tab, and you can zoom in)
 
-<img src="plots/mattblachess_Bh6+.pgn_None_all.svg"/>
