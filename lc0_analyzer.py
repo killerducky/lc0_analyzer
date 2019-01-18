@@ -42,6 +42,7 @@ LC0 = [
 NODES = [ 2**n for n in range(20+1) ]    # 2**20 = 1M
 #NODES = [ 2**n for n in range(16+1) ]   # 2**16 = 64K
 #NODES = [ 2**n for n in range(4+1) ]
+NUM_MOVES = 4
 
 class Lc0InfoHandler(chess.uci.InfoHandler):
     def __init__(self, board):
