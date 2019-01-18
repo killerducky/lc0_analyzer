@@ -204,17 +204,20 @@ def plot(pgn_filename, gamenum, plynum):
     bestdf = df.loc[df["sanmove"].isin(moves)]
 
     # Plots
-    tmp = bestdf.pivot(index="TN", columns="sanmove", values="N")
-    ax = tmp.plot.line(logx=True, logy=True)
+    fig, ax = plt.subplots()
+    for move in moves:
+        tmp = bestdf[bestdf["sanmove"] == move]
+        tmp.plot.line(x="TN", y="N", logx=True, logy=True, ax=ax)
     ax.legend(moves)
     plt.title("Child Node Visits vs Total Nodes")
     plt.xlabel("Total Nodes")
     plt.ylabel("Child Nodes")
     plt.savefig("%s/N.svg" % (savedir))
 
-
-    tmp = bestdf.pivot(index="TN", columns="sanmove", values="Q")
-    ax = tmp.plot.line(logx=True, logy=False)
+    fig, ax = plt.subplots()
+    for move in moves:
+        tmp = bestdf[bestdf["sanmove"] == move]
+        tmp.plot.line(x="TN", y="Q", logx=True, logy=False, ax=ax)
     ax.legend(moves)
     plt.title("Value vs Total Nodes")
     plt.xlabel("Total Nodes")
