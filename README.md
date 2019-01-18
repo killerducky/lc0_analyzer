@@ -1,4 +1,4 @@
-lc0_analyzer.py takes pgn files or FEN strings, analyzes them with the Lc0 chess engine, and outputs some graphs to visualize Lc0's search. For each position, several graphs are created:
+[lc0_analyzer.py](https://gist.github.com/killerducky/9c74bd8efd787aeb6ed6e4c252dbed2d lc0_analyzer.py) takes pgn files or FEN strings, analyzes them with the Lc0 chess engine, and outputs some graphs to visualize Lc0's search. For each position, several graphs are created:
 * Value vs Total Nodes - Shows how the value of the moves change over time (Total Nodes searched).
 * Value vs Child Node Visits - Show how the value of the top moves change, but assuming equal time (Child Node Visits) is given to each candidate move.
 * Child Node Visits vs Total Nodes - Shows how much total time (visits) each move is searched.
