@@ -28,6 +28,6 @@ Once Lc0 finds the winning Bg7+, it quickly gets all the search time.
 
 The problem is Bg7+ has low Policy, so the search ignores it for a long time.
 
-A giant image of all positions:
+A giant image of all positions (right click open image in new tab, and you can zoom in)
 
-<img src="mattblachess_Bh6+.pgn_None_all.svg" width="400"/>
+<img src="mattblachess_Bh6+.pgn_None_all.svg"/>
