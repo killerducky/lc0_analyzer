@@ -1,4 +1,4 @@
-[lc0_analyzer.py](https://gist.github.com/killerducky/9c74bd8efd787aeb6ed6e4c252dbed2d) takes pgn files or FEN strings, analyzes them with the Lc0 chess engine, and outputs some graphs to visualize Lc0's search. For each position, several graphs are created. See below a giant image (right click open image in new tab to zoom in more). See further below more description of the graphs.
+[lc0_analyzer.py](https://gist.github.com/killerducky/9c74bd8efd787aeb6ed6e4c252dbed2d) takes pgn files or FEN strings, analyzes them with the Lc0 chess engine, and outputs some graphs to visualize Lc0's search. For each position, several graphs are created (right click open image in new tab to zoom in more). 
 
 <img src="plots/mattblachess_Bh6+.pgn_None_all.svg"/>
 
@@ -7,7 +7,7 @@
 * Child Node Visits vs Total Nodes - Shows how much total time (visits) each move is searched.
 * Policy - Output of Lc0's NN Policy head.
 
-Example position
+Some highlights from the giant example above:
 
 <img src="plots/mattblachess_Bh6+.pgn_None_36/board.svg" width="200"/>
 
