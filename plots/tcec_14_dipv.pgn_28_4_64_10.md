@@ -6,20 +6,24 @@ lc0_analyzer.py takes pgn files or FEN strings, analyzes them with the Lc0 chess
 
 Black to play
 
-![](tcec_14_divp.pgn_28.4_64/board.svg)
+![](mattblachess_Bh6+.pgn_None_41/board.svg)
 
-![](tcec_14_divp.pgn_28.4_64/Q.svg) 
+![](mattblachess_Bh6+.pgn_None_41/Q.svg) 
 
-After ??? nodes, Lc0 realizes ??? loses.
+After 10K nodes, Lc0 realizes Bg7+ wins..
 
-![](tcec_14_divp.pgn_28.4_64/Q.svg) 
+![](mattblachess_Bh6+.pgn_None_41/Q.svg) 
 
-If Lc0 had searched ??? earlier it would have noticed right away that it loses.
+This graph shows Lc0 knows Bg7+ is winning the moment is starts searching it.
 
-![](tcec_14_divp.pgn_28.4_64/N.svg)
+![](mattblachess_Bh6+.pgn_None_41/N.svg)
 
-Once Lc0 finds the winning move, it quickly gets all the search time.
+Once Lc0 finds the winning Bg7+, it quickly gets all the search time.
 
-Also a giant image of all positions is created:
+![](mattblachess_Bh6+.pgn_None_41/P.svg)
 
-![](???.svg)
+The problem is Bg7+ has low Policy, so the search ignores it for a long time.
+
+A giant image of all positions:
+
+![](mattblachess_Bh6+.pgn_None_all.svg)
