@@ -1,10 +1,24 @@
 #!/usr/bin/env python3
 
 #
-# Usage:
+# See https://github.com/killerducky/lc0_analyzer/README.md for description
 #
-# Modify the global variables at top, and the analyze calls at the very bottom
-# Then just run with no arguments
+# Example bash script
+#----------------------------
+# #!/bin/bash
+# WEIGHT=32194
+# NODES=65536
+#
+# LC0="./lc0_analyzer.py \
+# --lc0=/mnt/c/Users/Andy/Desktop/arena_3.5.1/Engines/lc0-v0.20.1-windows-cuda/lc0.exe \
+# --w=/mnt/c/Users/Andy/Downloads/$WEIGHT \
+# --nodes=$NODES
+# "
+#
+# $LC0 --pgn="mattblachess_Bh6+.pgn"          --move=17.5 --numplies=6   # Black tries to attack queen, misses a deflection later
+# $LC0 --pgn=TCEC14_divp.pgn     --round=28.4 --move=33.5 --numplies=10  # SF > Lc0
+# $LC0 --fen_desc="lc0_fire" --fen="r1bqk2r/1p2bppp/p1nppn2/8/3NP3/2N1B3/PPPQBPPP/R3K2R w KQkq - 2 9"
+#----------------------------
 #
 
 import chess
@@ -18,31 +32,9 @@ import pandas as pd
 import numpy as np
 import os
 import math
+import argparse
 from collections import OrderedDict
 
-LC0 = [
-    #"/home/aolsen/bin/lc0-v0.20.1",
-    #"/mnt/c/Users/Andy/Desktop/arena_3.5.1/Engines/lc0-v0.19.0-windows-cuda/lc0.exe",
-    "/mnt/c/Users/Andy/Desktop/arena_3.5.1/Engines/lc0-v0.20.1-windows-cuda/lc0.exe",
-    #"-w", "/home/aolsen/lcnetworks/32194",
-    "-w", "c:/Users/Andy/Downloads/32194",
-    #"-w", "c:/Users/Andy/Downloads/40150",
-    #"-w", "c:/Users/Andy/Downloads/40196",
-    "-l", "lc0log.txt",
-    #"-t", "1",
-    #"--max-prefetch=0",
-    #"--no-out-of-order-eval",   # Otherwise nncache messes things up?  See issue #680
-    #"--collision-visit-limit=1",
-    #"--minibatch-size=1",
-    "--minibatch-size=16",      # because of #680, use this compromise between accuracy and speed
-    "--smart-pruning-factor=0", # We will start and stop in loops, so disable pruning
-    "--nncache=1000000",
-    "--verbose-move-stats",
-]
-NODES = [ 2**n for n in range(20+1) ]    # 2**20 = 1M
-#NODES = [ 2**n for n in range(16+1) ]   # 2**16 = 64K
-#NODES = [ 2**n for n in range(4+1) ]
-NUM_MOVES = 4
 
 class Lc0InfoHandler(chess.uci.InfoHandler):
     def __init__(self, board):
@@ -249,7 +241,7 @@ def analyze_game(pgn_filename, gamenum, plynum, plies):
         engine = chess.uci.popen_engine(LC0)
         info_handler = Lc0InfoHandler(None)
         engine.info_handlers.append(info_handler)
-    except: 
+    except:
         print("Warning: Could not open Lc0 engine.")
         engine = None
         info_handler = None
@@ -270,10 +262,6 @@ def analyze_game(pgn_filename, gamenum, plynum, plies):
         analyze(engine, info_handler, pgn_filename, gamenum, plynum+p)   # SF > Lc0
     if engine: engine.quit()
 
-#analyze_game("tcec_14_divp.pgn", "28.4", 2*(33-1)+0, 10)   # SF > Lc0
-#analyze_game("CCC_Be4_SF10_Lc0.pgn", "20", 2*(71-1)+0, 8)   # Black Lc0 deflects to promote, misses counter tactic
-analyze_game("mattblachess_Bh6+.pgn", None, 2*(19-1)+0, 6)   # Black Lc0 deflects to promote, misses counter tactic
-
 def analyze_fen(name, fen):
     engine = chess.uci.popen_engine(LC0)
     info_handler = Lc0InfoHandler(None)
@@ -281,6 +269,50 @@ def analyze_fen(name, fen):
     analyze(engine, info_handler, name, 0, 0, fen)
     engine.quit()
 
-#analyze_fen("test", "r1r2n2/1p2k2p/p3p2P/3b2B1/3P4/3B4/P6K/2R1R3 b - - 0 31")
-#analyze_fen("lc0_fire", "r1bqk2r/1p2bppp/p1nppn2/8/3NP3/2N1B3/PPPQBPPP/R3K2R w KQkq - 2 9")
-#analyze_fen("sf_lc0_m3", "8/5p1k/5q2/1p4R1/4n2P/P5PK/4Q3/2q5 w - - 0 74")
+if __name__ == "__main__":
+    usage_str = """
+lc0_analyzer --pgn pgnfile --move 4.0 --numplies 6
+lc0_analyzer --fen fenstring --numplies 6"""
+
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=usage_str)
+    parser.add_argument("--pgn", type=str, help="pgn file to process")
+    parser.add_argument("--round", type=str, help="round of pgn file, omit to pick first game")
+    parser.add_argument("--move", type=float, help="""
+4.0 = Before white's 4th move (analyze position after black's 3rd move)
+4.5 = Before blacks's 4th move (analyze position after white's 4th move)
+""")
+    parser.add_argument("--numplies", type=int, help="number of plies to analyze")
+    parser.add_argument("--fen", type=str, help="number of plies to analyze")
+    parser.add_argument("--fen_desc", type=str, help="description of fen position")
+    parser.add_argument("--lc0", type=str, required=True, help="lc0 executable")
+    parser.add_argument("--w", type=str, required=True, help="path to weights")
+    parser.add_argument("--nodes", type=int, default=2**16, help="number of nodes to analyze for each position, will be rounded to nearest power of 2")
+    parser.add_argument("--topn", type=int, default=4, help="plot top N moves")
+
+    args = parser.parse_args()
+
+    LC0 = [
+        args.lc0,
+        "-w", args.w,
+        "-l", "lc0log.txt",
+        #"-t", "1",
+        #"--max-prefetch=0",
+        #"--no-out-of-order-eval",   # Was trying to be more accurate, but see issue #680
+        #"--collision-visit-limit=1",
+        #"--minibatch-size=1",
+        "--minibatch-size=16",      # because of #680, use this compromise between accuracy and speed
+        "--smart-pruning-factor=0", # We will start and stop in loops, so disable pruning
+        "--nncache=1000000",
+        "--verbose-move-stats",
+    ]
+    NODES = [ 2**n for n in range(round(math.log(args.nodes))+1)]
+    NUM_MOVES = args.topn
+
+    if args.pgn:
+        analyze_game(args.pgn, args.round, round(args.move*2-3), args.numplies)
+    elif args.fen:
+        analyze_fen(args.fen_desc, args.fen)
+    else: raise(Exception("must provide --pgn or --fen"))
+
