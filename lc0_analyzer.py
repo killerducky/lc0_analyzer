@@ -21,6 +21,8 @@ import os
 import math
 import argparse
 from collections import OrderedDict
+import svgutils.transform as sg
+from svgutils.compose import *
 
 
 class Lc0InfoHandler(chess.uci.InfoHandler):
@@ -108,6 +110,11 @@ def get_board(pgn_filename, gamenum, plynum):
             sanstr += " " + str(node.san())
         info += "position startpos moves" + ucistr + "\n"
         info += sanstr + "\n"  # TODO: Add move numbers. Surely python-chess can do this for me?
+        # Something like this will work...
+        #game = getgame(pgn_filename, gamenum)
+        #end = game.end()
+        #board = end.board()
+        #print(game.board().variation_san(board.move_stack))
         node = nodes[plynum]
         board = node.board()
         fig = chess.svg.board(board=board, lastmove=node.move)
@@ -119,53 +126,56 @@ def get_board(pgn_filename, gamenum, plynum):
 
 # TODO:
 # gamenum/plynum vs fen is a mess right now...
+def analyze_and_plot(engine, info_handler, pgn_filename, gamenum, plynum, fen=None):
+    analyze(engine, info_handler, pgn_filename, gamenum, plynum, fen)
+    plot(pgn_filename, gamenum, plynum)
+
 def analyze(engine, info_handler, pgn_filename, gamenum, plynum, fen=None):
-    savedir = "plots/%s_%s_%3.1f" % (pgn_filename, gamenum, (plynum+3)/2.0)
+    savedir = "plots/%s_%s_%05.1f" % (pgn_filename, gamenum, (plynum+3)/2.0)
     datafilename = "%s/data.html" % (savedir)
-    if not os.path.exists(datafilename):
-        if not os.path.exists(savedir):
-            os.makedirs(savedir)
-        outfile = open(datafilename, "w")
-        outfile.write("""
+    if os.path.exists(datafilename):
+        return
+    if not os.path.exists(savedir):
+        os.makedirs(savedir)
+    outfile = open(datafilename, "w")
+    outfile.write("""
 <img src="board.svg" height="100%"/> <br>
 <img src="Q.svg"/> <br>
 <img src="Q2.svg"/> <br>
 <img src="N.svg"/> <br>
 <img src="P.svg"/> <br>
-<pre>
-        """)
-        if fen:
-            board = chess.Board(fen)
-            fig = chess.svg.board(board=board)
-            info = "position %s\n" % (fen)
-        else:
-            (board, fig, info) = get_board(pgn_filename, gamenum, plynum)
-        outfile.write(info)
-        outfile.write(board.fen() + "\n")
-        outfile.write(str(board) + "\n")
-        open("%s/board.svg" % (savedir), "w").write(fig)
-        outfile.write(str(LC0) + "\n")
-        engine.uci()
-        outfile.write(engine.name + "\n")
-        # Reset engine search tree, but not engine NNCache, by setting different position
-        engine.position(chess.Board())
+<pre>""")
+    if fen:
+        board = chess.Board(fen)
+        fig = chess.svg.board(board=board)
+        info = "position %s\n" % (fen)
+    else:
+        (board, fig, info) = get_board(pgn_filename, gamenum, plynum)
+    outfile.write(info)
+    outfile.write(board.fen() + "\n")
+    outfile.write(str(board) + "\n")
+    open("%s/board.svg" % (savedir), "w").write(fig)
+    outfile.write(str(LC0) + "\n")
+    engine.uci()
+    outfile.write(engine.name + "\n")
+    # Reset engine search tree, but not engine NNCache, by setting different position
+    engine.position(chess.Board())
+    info_handler.reset()
+    info_handler.board = chess.Board()
+    engine.go(nodes=1)
+    for nodes in NODES:
+        # Do our position now
         info_handler.reset()
-        info_handler.board = chess.Board()
-        engine.go(nodes=1)
-        for nodes in NODES:
-            # Do our position now
-            info_handler.reset()
-            info_handler.board = board
-            engine.position(board)
-            engine.go(nodes=nodes)
-            for s in info_handler.strings:
-                outfile.write("INFO: TN: %s %s\n" % (nodes, s))
-        outfile.write("</pre>\n")
-        outfile.close()
-    plot(pgn_filename, gamenum, plynum)
+        info_handler.board = board
+        engine.position(board)
+        engine.go(nodes=nodes)
+        for s in info_handler.strings:
+            outfile.write("INFO: TN: %s %s\n" % (nodes, s))
+    outfile.write("</pre>\n")
+    outfile.close()
 
 def plot(pgn_filename, gamenum, plynum):
-    savedir = "plots/%s_%s_%3.1f" % (pgn_filename, gamenum, (plynum+3)/2.0)
+    savedir = "plots/%s_%s_%05.1f" % (pgn_filename, gamenum, (plynum+3)/2.0)
 
     # Parse data into pandas
     move_infos = []
@@ -225,6 +235,7 @@ def plot(pgn_filename, gamenum, plynum):
 
 def analyze_game(pgn_filename, gamenum, plynum, plies):
     try:
+        # In case you have the data files already, but no lc0 exe.
         engine = chess.uci.popen_engine(LC0)
         info_handler = Lc0InfoHandler(None)
         engine.info_handlers.append(info_handler)
@@ -234,27 +245,46 @@ def analyze_game(pgn_filename, gamenum, plynum, plies):
         info_handler = None
     if not os.path.exists("plots"):
         os.makedirs("plots")
-    outfile = open("plots/%s_%s_%s_%s.html" % (pgn_filename, gamenum, plynum, plies), "w")
+    outfile = open("plots/%s_%s_%0.3f_%s.html" % (pgn_filename, gamenum, (plynum+3)/2, plies), "w")
     outfile.write('<table width="%d" height="500">\n' % (plies*300))
     outfile.write("<tr>\n")
-    for svgfile in ("board", "Q2", "N", "P", "Q"):
+    for svgfile in ("board", "Q", "Q2", "N", "P"):
         for p in range(plies):
-            savedir = "%s_%s_%3.1f" % (pgn_filename, gamenum, (plynum+3)/2.0)
+            savedir = "%s_%s_%05.1f" % (pgn_filename, gamenum, (plynum+p+3)/2.0)
             outfile.write('<td> <img src="%s/%s.svg" width="100%%"/> </td>\n' % (savedir, svgfile))
         outfile.write("</tr>\n")
     outfile.write("</tr>\n")
     outfile.write("</table>\n")
     outfile.close()
     for p in range(plies):
-        analyze(engine, info_handler, pgn_filename, gamenum, plynum+p)
+        analyze_and_plot(engine, info_handler, pgn_filename, gamenum, plynum+p)
     if engine: engine.quit()
 
 def analyze_fen(name, fen):
     engine = chess.uci.popen_engine(LC0)
     info_handler = Lc0InfoHandler(None)
     engine.info_handlers.append(info_handler)
-    analyze(engine, info_handler, name, 0, 0, fen)
+    analyze_and_plot(engine, info_handler, name, 0, 0, fen)
     engine.quit()
+
+def compose(filename, move_start, numplies, xsize=470, ysize=350, scale=0.6, scaleb=0.85):
+    for move in np.arange(move_start, move_start+numplies/2, 0.5):
+        fig = Figure(xsize*scale, ysize*5*scale,
+            Panel(SVG("%s_%05.1f/board.svg" % (filename, move)).scale(scale*scaleb)),
+            Panel(SVG("%s_%05.1f/Q.svg"     % (filename, move)).scale(scale)),
+            Panel(SVG("%s_%05.1f/Q2.svg"    % (filename, move)).scale(scale)),
+            Panel(SVG("%s_%05.1f/N.svg"     % (filename, move)).scale(scale)),
+            Panel(SVG("%s_%05.1f/P.svg"     % (filename, move)).scale(scale)),
+        )
+        fig.tile(1,5)
+        fig.save("%s_%05.1f/all.svg" % (filename, move))
+
+    panels = []
+    for move in np.arange(move_start, move_start+numplies/2, 0.5):
+        panels.append(Panel(SVG("%s_%05.1f/all.svg" % (filename, move))))
+    fig = Figure(xsize*(numplies)*scale, ysize*5*scale, *panels)
+    fig.tile(numplies, 1)
+    fig.save("%s_all.svg" % filename)
 
 if __name__ == "__main__":
     usage_str = """
@@ -298,8 +328,16 @@ lc0_analyzer --fen fenstring --numplies 6"""
     NUM_MOVES = args.topn
 
     if args.pgn:
+        game = getgame(args.pgn, args.round)
+        gamelen = len(game.end().board().move_stack)
+        plynum = round(args.move*2-3)
+        if plynum + args.numplies > gamelen:
+            args.numplies = gamelen-plynum-2
+        print(gamelen, plynum, args.numplies)
         analyze_game(args.pgn, args.round, round(args.move*2-3), args.numplies)
+        compose("plots/%s_%s" % (args.pgn, args.round), args.move, args.numplies)
     elif args.fen:
         analyze_fen(args.fen_desc, args.fen)
+        #compose("plots/%s_%s" % (args.fen_desc, args.round), args.numplies)
     else: raise(Exception("must provide --pgn or --fen"))
 
