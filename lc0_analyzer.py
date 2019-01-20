@@ -1,24 +1,11 @@
 #!/usr/bin/env python3
 
 #
+# lc0_analyzer.py --help
+#
 # See https://github.com/killerducky/lc0_analyzer/README.md for description
 #
-# Example bash script
-#----------------------------
-# #!/bin/bash
-# WEIGHT=32194
-# NODES=65536
-#
-# LC0="./lc0_analyzer.py \
-# --lc0=/mnt/c/Users/Andy/Desktop/arena_3.5.1/Engines/lc0-v0.20.1-windows-cuda/lc0.exe \
-# --w=/mnt/c/Users/Andy/Downloads/$WEIGHT \
-# --nodes=$NODES
-# "
-#
-# $LC0 --pgn="mattblachess_Bh6+.pgn"          --move=17.5 --numplies=6   # Black tries to attack queen, misses a deflection later
-# $LC0 --pgn=TCEC14_divp.pgn     --round=28.4 --move=33.5 --numplies=10  # SF > Lc0
-# $LC0 --fen_desc="lc0_fire" --fen="r1bqk2r/1p2bppp/p1nppn2/8/3NP3/2N1B3/PPPQBPPP/R3K2R w KQkq - 2 9"
-#----------------------------
+# See example.sh
 #
 
 import chess
@@ -133,7 +120,7 @@ def get_board(pgn_filename, gamenum, plynum):
 # TODO:
 # gamenum/plynum vs fen is a mess right now...
 def analyze(engine, info_handler, pgn_filename, gamenum, plynum, fen=None):
-    savedir = "plots/%s_%s_%s" % (pgn_filename, gamenum, plynum)
+    savedir = "plots/%s_%s_%3.1f" % (pgn_filename, gamenum, (plynum+3)/2.0)
     datafilename = "%s/data.html" % (savedir)
     if not os.path.exists(datafilename):
         if not os.path.exists(savedir):
@@ -178,7 +165,7 @@ def analyze(engine, info_handler, pgn_filename, gamenum, plynum, fen=None):
     plot(pgn_filename, gamenum, plynum)
 
 def plot(pgn_filename, gamenum, plynum):
-    savedir = "plots/%s_%s_%s" % (pgn_filename, gamenum, plynum)
+    savedir = "plots/%s_%s_%3.1f" % (pgn_filename, gamenum, (plynum+3)/2.0)
 
     # Parse data into pandas
     move_infos = []
@@ -252,14 +239,14 @@ def analyze_game(pgn_filename, gamenum, plynum, plies):
     outfile.write("<tr>\n")
     for svgfile in ("board", "Q2", "N", "P", "Q"):
         for p in range(plies):
-            savedir = "%s_%s_%s" % (pgn_filename, gamenum, plynum+p)
+            savedir = "%s_%s_%3.1f" % (pgn_filename, gamenum, (plynum+3)/2.0)
             outfile.write('<td> <img src="%s/%s.svg" width="100%%"/> </td>\n' % (savedir, svgfile))
         outfile.write("</tr>\n")
     outfile.write("</tr>\n")
     outfile.write("</table>\n")
     outfile.close()
     for p in range(plies):
-        analyze(engine, info_handler, pgn_filename, gamenum, plynum+p)   # SF > Lc0
+        analyze(engine, info_handler, pgn_filename, gamenum, plynum+p)
     if engine: engine.quit()
 
 def analyze_fen(name, fen):
