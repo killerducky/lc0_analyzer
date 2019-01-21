@@ -23,6 +23,7 @@ import argparse
 from collections import OrderedDict
 import svgutils.transform as sg
 from svgutils.compose import *
+#import cairosvg
 
 
 class Lc0InfoHandler(chess.uci.InfoHandler):
@@ -267,24 +268,40 @@ def analyze_fen(name, fen):
     analyze_and_plot(engine, info_handler, name, 0, 0, fen)
     engine.quit()
 
-def compose(filename, move_start, numplies, xsize=470, ysize=350, scale=0.6, scaleb=0.85):
+def compose(pgn_filename, gamenum, move_start, numplies, xsize=470, ysize=350, scale=0.6, scaleb=0.85):
+    outfile = open("plots/%s_%s_%05.1f_%03d.html" % (pgn_filename, gamenum, move_start, numplies), "w")
+    outfile.write('<table width="%d" height="500">\n' % (numplies*300))
+    outfile.write("<tr>\n")
+    for svgfile in ("board", "Q", "Q2", "N", "P"):
+        for move in np.arange(move_start, move_start+numplies/2, 0.5):
+            savedir = "%s_%s_%05.1f" % (pgn_filename, gamenum, move)
+            outfile.write('<td> <img src="%s/%s.svg" width="100%%"/> </td>\n' % (savedir, svgfile))
+        outfile.write("</tr>\n")
+    outfile.write("</tr>\n")
+    outfile.write("</table>\n")
+    outfile.close()
     for move in np.arange(move_start, move_start+numplies/2, 0.5):
+        savedir = "plots/%s_%s_%05.1f" % (pgn_filename, gamenum, move)
         fig = Figure(xsize*scale, ysize*5*scale,
-            Panel(SVG("%s_%05.1f/board.svg" % (filename, move)).scale(scale*scaleb)),
-            Panel(SVG("%s_%05.1f/Q.svg"     % (filename, move)).scale(scale)),
-            Panel(SVG("%s_%05.1f/Q2.svg"    % (filename, move)).scale(scale)),
-            Panel(SVG("%s_%05.1f/N.svg"     % (filename, move)).scale(scale)),
-            Panel(SVG("%s_%05.1f/P.svg"     % (filename, move)).scale(scale)),
+            Panel(SVG("%s/board.svg" % (savedir)).scale(scale*scaleb)),
+            Panel(SVG("%s/Q.svg"     % (savedir)).scale(scale)),
+            Panel(SVG("%s/Q2.svg"    % (savedir)).scale(scale)),
+            Panel(SVG("%s/N.svg"     % (savedir)).scale(scale)),
+            Panel(SVG("%s/P.svg"     % (savedir)).scale(scale)),
         )
         fig.tile(1,5)
-        fig.save("%s_%05.1f/all.svg" % (filename, move))
+        fig.save("%s/all.svg" % (savedir))
 
     panels = []
     for move in np.arange(move_start, move_start+numplies/2, 0.5):
-        panels.append(Panel(SVG("%s_%05.1f/all.svg" % (filename, move))))
+        panels.append(Panel(SVG("plots/%s_%s_%05.1f/all.svg" % (pgn_filename, gamenum, move))))
     fig = Figure(xsize*(numplies)*scale, ysize*5*scale, *panels)
     fig.tile(numplies, 1)
-    fig.save("%s_all.svg" % filename)
+    filename = "plots/%s_%s_%05.1f_all" % (pgn_filename, gamenum, move_start)
+    fig.save("%s.svg" % (filename))
+
+    # cariosvg doesn't parse units "px"
+    #cairosvg.svg2png(url="%s.svg" % (filename), write_to="%s.png" % (filename))
 
 if __name__ == "__main__":
     usage_str = """
@@ -307,6 +324,7 @@ lc0_analyzer --fen fenstring --numplies 6"""
     parser.add_argument("--w", type=str, required=True, help="path to weights")
     parser.add_argument("--nodes", type=int, default=2**16, help="number of nodes to analyze for each position, will be rounded to nearest power of 2")
     parser.add_argument("--topn", type=int, default=4, help="plot top N moves")
+    parser.add_argument("--ply_per_page", type=int, default=6, help="how many plies to put together in one .svg page")
 
     args = parser.parse_args()
 
@@ -332,10 +350,10 @@ lc0_analyzer --fen fenstring --numplies 6"""
         gamelen = len(game.end().board().move_stack)
         plynum = round(args.move*2-3)
         if plynum + args.numplies > gamelen:
-            args.numplies = gamelen-plynum-2
-        print(gamelen, plynum, args.numplies)
+            args.numplies = gamelen-plynum
         analyze_game(args.pgn, args.round, round(args.move*2-3), args.numplies)
-        compose("plots/%s_%s" % (args.pgn, args.round), args.move, args.numplies)
+        for m in np.arange(args.move, args.move+args.numplies/2, 0.5*args.ply_per_page):
+            compose(args.pgn, args.round, m, min(args.ply_per_page, min(args.ply_per_page, args.numplies-(m-args.move)*2)))
     elif args.fen:
         analyze_fen(args.fen_desc, args.fen)
         #compose("plots/%s_%s" % (args.fen_desc, args.round), args.numplies)
