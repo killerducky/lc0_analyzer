@@ -342,7 +342,7 @@ lc0_analyzer --fen fenstring --numplies 6"""
         "--nncache=1000000",
         "--verbose-move-stats",
     ]
-    NODES = [ 2**n for n in range(round(math.log(args.nodes))+1)]
+    NODES = [ 2**n for n in range(round(math.log(args.nodes, 2))+1)]
     NUM_MOVES = args.topn
 
     if args.pgn:
