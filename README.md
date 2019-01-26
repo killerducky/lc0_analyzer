@@ -9,7 +9,7 @@ lc0_analyzer.py takes pgn files or FEN strings, analyzes them with the Lc0 chess
 
 Some highlights from the giant example above:
 
-<img src="plots/plots/mattblachess_Bh6+.pgn_None_019.5/board.svg" width="200"/>
+<img src="plots/mattblachess_Bh6+.pgn_None_019.5/board.svg" width="200"/>
 
 Black to play, Lc0 doesn't realize Bc6 is a losing move. To see the problem, let's look at the position a few moves later with White to play:
 
