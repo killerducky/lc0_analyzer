@@ -14,6 +14,7 @@ import time
 import argparse
 import datetime
 import threading
+import queue
 import subprocess
 
 
@@ -130,50 +131,37 @@ def plot(df):
     plt.show()
     plt.pause(0.001)
 
-def test():
-    if not plt.fignum_exists(1):
-        fig, ax = plt.subplots(2, 2)
-    else:
-        fig = plt.figure(1)
-        fig.clf()
-        fig.add_subplot(221)
-        fig.add_subplot(222)
-        fig.add_subplot(223)
-        fig.add_subplot(224)
-
-    fig = plt.figure(1)
-    ax = fig.get_axes()
-    print(fig, ax)
-
-    plt.ion()
-    #plt.subplot(221)
-    ax = fig.get_axes()[0]
-    ax.plot([1,2,3],[4,5,6])
-    plt.show
-    plt.pause(2)
-
 class UciWrite(threading.Thread):
-    def __init__(self, p):
+    def __init__(self, p, q):
         threading.Thread.__init__(self)
         self.p = p
+        self.q = q
     def run(self):
-        #p.stdin.write("uci\n")
-        #p.stdin.flush()
         while 1:
             s = sys.stdin.readline()
             p.stdin.write(s)
             p.stdin.flush()
+            if s.startswith("position"):
+                q.put(s)
             if s.startswith("quit"):
                 return
-        
+
 class UciRead(threading.Thread):
-    def __init__(self, p):
+    def __init__(self, p, q):
         threading.Thread.__init__(self)
         self.p = p
+        self.q = q
+        self.reset()
+    def reset(self):
         self.strings = []
         self.totalnodes = None
+        self.position = None
     def run(self):
         while p.poll() == None:
+            if not self.q.empty():
+                sys.stdout.flush()
+                self.reset()
+                self.position = q.get()
             info = p.stdout.readline().rstrip()
             print(info)
             sys.stdout.flush()
@@ -197,7 +185,6 @@ class UciRead(threading.Thread):
                             move_infos.append(info)
                         df = pd.DataFrame(move_infos)
                         plot(df)
-        
 
 if __name__ == "__main__":
     usage_str = """
@@ -217,8 +204,9 @@ TBD"""
     NUM_MOVES = args.topn
 
     p = subprocess.Popen(LC0, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
-    uciRead = UciRead(p)
-    uciWrite = UciWrite(p)
+    q = queue.Queue()
+    uciRead = UciRead(p, q)
+    uciWrite = UciWrite(p, q)
     uciRead.start()
     uciWrite.start()
     uciWrite.join()
