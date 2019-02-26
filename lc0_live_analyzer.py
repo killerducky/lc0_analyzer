@@ -86,7 +86,7 @@ def plot(df):
 
     # Plots
     fig = plt.figure(1)
-    ax = fig.get_axes()[0]
+    ax = fig.get_axes()[2]
     plt.axes(ax)
     for move in moves:
         tmp = bestdf[bestdf["sanmove"] == move]
@@ -97,7 +97,7 @@ def plot(df):
     plt.ylabel("Child Nodes")
 
     fig = plt.figure(1)
-    ax = fig.get_axes()[1]
+    ax = fig.get_axes()[0]
     plt.axes(ax)
     for move in moves:
         tmp = bestdf[bestdf["sanmove"] == move]
@@ -110,7 +110,7 @@ def plot(df):
 
     # This plot can have multiple entries with the same index="N", so pivot fails.
     fig = plt.figure(1)
-    ax = fig.get_axes()[2]
+    ax = fig.get_axes()[1]
     plt.axes(ax)
     for move in moves:
         tmp = bestdf[bestdf["sanmove"] == move]
@@ -137,6 +137,8 @@ class UciWrite(threading.Thread):
         self.p = p
         self.q = q
     def run(self):
+        # Secretly set the hidden option for user
+        p.stdin.write("setoption name LogLiveStats value true\n")
         while 1:
             s = sys.stdin.readline()
             p.stdin.write(s)
@@ -162,6 +164,7 @@ class UciRead(threading.Thread):
                 sys.stdout.flush()
                 self.reset()
                 self.position = q.get()
+                # TODO: Parse position so we can have SAN notation moves
             info = p.stdout.readline().rstrip()
             print(info)
             sys.stdout.flush()
