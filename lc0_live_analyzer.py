@@ -3,11 +3,15 @@
 #
 #
 
+import chess
+import chess.pgn
+import chess.uci
 import re
 import matplotlib.pyplot as plt
 import matplotlib.axes
 import pandas as pd
 import os
+import numpy as np
 import sys
 import math
 import time
@@ -72,8 +76,6 @@ def plot(df):
         fig.add_subplot(222)
         fig.add_subplot(223)
         fig.add_subplot(224)
-    fig = plt.figure(1)
-    ax = fig.get_axes()
 
     # Filter top moves, and get P
     TNmax = df["TN"].max()
@@ -124,12 +126,25 @@ def plot(df):
     fig = plt.figure(1)
     ax = fig.get_axes()[3]
     plt.axes(ax)
-    best.plot.bar(x="sanmove", y="P", legend=False, ax=ax)
+    # TODO: Why do I have to specify the colors?
+    # Can I at least tell it use the default cycle easier?
+    best.plot.bar(x="sanmove", y="P", legend=False, ax=ax, colors=plt.rcParams['axes.prop_cycle'].by_key()['color'])
     plt.xlabel("")
     plt.title("Policy")
     plt.tight_layout()
     plt.show()
     plt.pause(0.001)
+
+def uci_position_to_board(ucistr):
+    board = chess.Board()
+    #position startpos moves e2e4 c7c5
+    moves = ucistr.split()
+    if len(moves) > 3 and moves[0:2] == ("position", "startpos", "moves"):
+        for m in moves[3:]:
+            board.push_uci(m)
+            #game = chess.pgn.Game.from_board(board)
+            #print(game)
+    return board
 
 class UciWrite(threading.Thread):
     def __init__(self, p, q):
@@ -156,22 +171,29 @@ class UciRead(threading.Thread):
         self.reset()
     def reset(self):
         self.strings = []
-        self.totalnodes = None
+        self.totalnodes = 0  # TODO set to 0, there is a race between position sent and receiving new infos
         self.position = None
+        self.board = None
+        #print("reset")
     def run(self):
         while p.poll() == None:
             if not self.q.empty():
                 sys.stdout.flush()
                 self.reset()
                 self.position = q.get()
-                # TODO: Parse position so we can have SAN notation moves
+                self.board = uci_position_to_board(self.position)
             info = p.stdout.readline().rstrip()
             print(info)
             sys.stdout.flush()
             if info.startswith("info string"):
                 # "info string c7f4  (268 ) N:      40 (+37) (P: 20.23%) (Q: -0.04164) (U: 0.08339) (Q+U:  0.04175) (V:  0.1052)"
-                (_1, _2, move, info) = info.split(maxsplit=3)
-                s = "TN: %d %6s %s %s" % (self.totalnodes, move, move, info)
+                (_, _, move, info) = info.split(maxsplit=3)
+                if self.board:
+                    sanmove = self.board.san(self.board.parse_uci(move))
+                else:
+                    sanmove = move
+                #print("aolsen", self.totalnodes, sanmove, move, info)
+                s = "TN: %d %6s %s %s" % (self.totalnodes, sanmove, move, info)
                 self.strings.append(s)
             elif info.startswith("info depth"):
                 # info depth 1 seldepth 2 time 14 nodes 3 score cp 57 hashfull 0 nps 214 tbhits 0 multipv 1 pv e2e4 e7e5
@@ -179,6 +201,7 @@ class UciRead(threading.Thread):
                 if not m: raise
                 totalnodes = int(m.group(1))
                 if self.totalnodes != totalnodes:
+                    #print("aolsen TN", totalnodes)
                     self.totalnodes = totalnodes
                     if len(self.strings) > 1:
                         move_infos = []
@@ -197,7 +220,7 @@ TBD"""
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=usage_str)
     parser.add_argument("--lc0", type=str, required=True, help="lc0 executable")
-    parser.add_argument("--topn", type=int, default=4, help="plot top N moves")
+    parser.add_argument("--topn", type=int, default=8, help="plot top N moves")
 
     args = parser.parse_args()
 
