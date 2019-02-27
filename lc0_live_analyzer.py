@@ -128,7 +128,10 @@ def plot(df):
     plt.axes(ax)
     # TODO: Why do I have to specify the colors?
     # Can I at least tell it use the default cycle easier?
-    best.plot.bar(x="sanmove", y="P", legend=False, ax=ax, colors=plt.rcParams['axes.prop_cycle'].by_key()['color'])
+    #best.plot.bar(x="sanmove", y="P", legend=False, ax=ax, colors=plt.rcParams['axes.prop_cycle'].by_key()['color'])
+    tnmax = df[df["TN"] == TNmax].sort_values("N", ascending=False)
+    print(tnmax)
+    tnmax.plot.bar(x="sanmove", y="P", legend=False, ax=ax, colors=plt.rcParams['axes.prop_cycle'].by_key()['color'])
     plt.xlabel("")
     plt.title("Policy")
     plt.tight_layout()
@@ -136,14 +139,18 @@ def plot(df):
     plt.pause(0.001)
 
 def uci_position_to_board(ucistr):
-    board = chess.Board()
     #position startpos moves e2e4 c7c5
-    moves = ucistr.split()
-    if len(moves) > 3 and moves[0:2] == ("position", "startpos", "moves"):
-        for m in moves[3:]:
+    #position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 moves e2e4 c7c5
+    if ucistr.startswith("position fen"):
+        fen = " ".join(ucistr.split()[2:8])
+        board = chess.Board(fen=fen)
+    else:
+        board = chess.Board()
+    m = re.search("moves (.*)", ucistr)
+    if m:
+        moves = m.group(1).split()
+        for m in moves:
             board.push_uci(m)
-            #game = chess.pgn.Game.from_board(board)
-            #print(game)
     return board
 
 class UciWrite(threading.Thread):
@@ -156,10 +163,10 @@ class UciWrite(threading.Thread):
         p.stdin.write("setoption name LogLiveStats value true\n")
         while 1:
             s = sys.stdin.readline()
-            p.stdin.write(s)
-            p.stdin.flush()
             if s.startswith("position"):
                 q.put(s)
+            p.stdin.write(s)
+            p.stdin.flush()
             if s.startswith("quit"):
                 return
 
@@ -171,18 +178,18 @@ class UciRead(threading.Thread):
         self.reset()
     def reset(self):
         self.strings = []
-        self.totalnodes = 0  # TODO set to 0, there is a race between position sent and receiving new infos
+        self.totalnodes = None
         self.position = None
         self.board = None
         #print("reset")
     def run(self):
         while p.poll() == None:
+            info = p.stdout.readline().rstrip()
             if not self.q.empty():
                 sys.stdout.flush()
                 self.reset()
                 self.position = q.get()
                 self.board = uci_position_to_board(self.position)
-            info = p.stdout.readline().rstrip()
             print(info)
             sys.stdout.flush()
             if info.startswith("info string"):
@@ -220,7 +227,7 @@ TBD"""
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=usage_str)
     parser.add_argument("--lc0", type=str, required=True, help="lc0 executable")
-    parser.add_argument("--topn", type=int, default=8, help="plot top N moves")
+    parser.add_argument("--topn", type=int, default=4, help="plot top N moves")
 
     args = parser.parse_args()
 
