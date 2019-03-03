@@ -226,6 +226,9 @@ Requirements: Python3 and a bunch of packages.
 Add the following as your UCI chess engine:
   lc0_live_analyzer.py --lc0 c:\path\\to\\lc0.exe
 
+Configure other settings as normal, but:
+you must enable VerboseMoveStats!
+
 Then configure other settings as normal.
 """
 
