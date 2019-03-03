@@ -29,7 +29,7 @@ from svgutils.compose import *
 #moves = "e2e4 c7c6 d2d4 d7d5"
 
 board = chess.Board()
-for m in sys.argv[1].split():
+for m in sys.argv[1:]:
     board.push_uci(m)
 game = chess.pgn.Game.from_board(board)
 print(game)

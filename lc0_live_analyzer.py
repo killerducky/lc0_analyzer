@@ -221,7 +221,13 @@ class UciRead(threading.Thread):
 
 if __name__ == "__main__":
     usage_str = """
-TBD"""
+Requirements: Python3 and a bunch of packages.
+
+Add the following as your UCI chess engine:
+  lc0_live_analyzer.py --lc0 c:\path\\to\\lc0.exe
+
+Then configure other settings as normal.
+"""
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
