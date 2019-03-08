@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
 #
-# 32930	2	5c222ccd	3287.00	32406	20	256	2019-01-28 00:59:32 +00:00	3287
+# Check http://lczero.org/networks to find net number.
+# Note the run number and date of the net.
+# Find training pgns for that run/date here: http://data.lczero.org/files/
+# Extract pgns
+# Run: pgn_classify.py pgns_dir | tee logfile
+# Copy/paste last output to stats.py script
 #
 
 import chess
@@ -24,6 +29,8 @@ import sys
 
 
 path = sys.argv[1]
+pgnout = open(sys.argv[2], "w")
+
 files = [os.path.join(path, f) for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
 stats = {}
 stats["LEGAL_L"] = 0
@@ -57,28 +64,45 @@ for pgnfile in files:
         board.push(node.move)
         if node.move.promotion:
             stats["TOTAL_PROMOTE"] += 1
-            print(board)
             ff = chess.square_file(node.move.from_square)
             #rf = chess.square_rank(node.move.from_square)
             ft = chess.square_file(node.move.to_square)
             rt = chess.square_rank(node.move.to_square)
-            pnorm = chess.Move(node.move.from_square, chess.square(ff, rt), promotion=chess.QUEEN) in legal_moves
-            pleft = ff > 0 and chess.Move(node.move.from_square, chess.square(ff-1, rt), promotion=chess.QUEEN) in legal_moves
-            pright = ff < 7 and chess.Move(node.move.from_square, chess.square(ff+1, rt), promotion=chess.QUEEN) in legal_moves
+            mleft = chess.Move(node.move.from_square, chess.square(ff-1, rt), promotion=chess.QUEEN) if ff > 0 else None
+            mnorm = chess.Move(node.move.from_square, chess.square(ff, rt), promotion=chess.QUEEN)
+            mright = chess.Move(node.move.from_square, chess.square(ff+1, rt), promotion=chess.QUEEN) if ff < 7 else None
+            pnorm = mnorm in legal_moves
+            pleft = mleft in legal_moves
+            pright = mright in legal_moves
             if pleft: stats["LEGAL_L"] += 1
             if pnorm: stats["LEGAL_N"] += 1
             if pright: stats["LEGAL_R"] += 1
             stats[(pleft, pnorm, pright)] += 1
-            if ff-1 == ft: 
+            if ff-1 == ft:
                 stats["GAME_L"] += 1
                 stats[(pleft, pnorm, pright, "L")] += 1
-            if ff   == ft: 
+            if ff   == ft:
                 stats["GAME_N"] += 1
                 stats[(pleft, pnorm, pright, "N")] += 1
-            if ff+1 == ft: 
+            if ff+1 == ft:
                 stats["GAME_R"] += 1
                 stats[(pleft, pnorm, pright, "R")] += 1
-            print(node.move, pleft, pnorm, pright, stats)
+            if sum([pleft, pnorm, pright]) >= 2:
+                board.pop()
+                ucimoves = " ".join([move.uci() for move in board.move_stack])
+                info_str = ""
+                info_str += "position startpos moves " + ucimoves + "\n"
+                info_str += "game move: " + node.move.uci() + "\n"
+                if pleft: info_str += "pleft: position startpos move " + ucimoves + " " +mleft.uci() + "\n"
+                if pnorm: info_str += "pnorm: position startpos move " + ucimoves + " " +mnorm.uci() + "\n"
+                if pright: info_str += "pright: position startpos move " + ucimoves + " " +mright.uci() + "\n"
+                board.push(node.move)
+                node.comment = info_str
+                pgnout.write(str(game) + "\n")
+                #info_str += str(board) + "\n"
+                print(info_str)
+                print()
+            #print("stats:", node.move, pleft, pnorm, pright, stats)
             print()
 
-  
+print("stats:", node.move, pleft, pnorm, pright, stats)
