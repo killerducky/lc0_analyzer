@@ -82,6 +82,18 @@ This script parses a logfile generated using a special lc0 binary that dumps
 activation data of the NN. It outputs a text file of the position, and images
 of the activations for every layer of the NN.
 
+To generate a logfile:
+* `git clone -b nndebug http://github.com/killerducky/lc0`
+* Build lc0
+* Run lc0 with Backend=blas, and LogFile=lc0log_mypos.txt
+* setposition you want to analyze
+  * currently script assumes there is only 1 position!
+  * fens won't work right now, only full setposition
+* go nodes 1 (it's important the NN only analyzes one position)
+* quit lc0
+* Now you can run this script on lc0log_mypos.txt
+
+
 Side to move is always going up in these images.
 
 Output files generated:
@@ -105,7 +117,7 @@ activation_layer_003.png - Output of 1st resblock, second half
 ...
 activation_layer_040.png - Output of 20th resblock, second half
 activation_layer_041.png - Output of 20th resblock, second half
-activation_layer_042.png - Output of Policy FC layer (T50 convolutional Policy not supported yet)
+activation_layer_042.png - Output of Policy FC layer (T50 convolutional Policy will have two convolves instead)
 (Final Policy move selection not supported yet)
 """
 
