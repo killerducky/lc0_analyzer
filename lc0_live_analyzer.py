@@ -87,54 +87,52 @@ def plot(df):
     plt.ion()
 
     # Plots
-    fig = plt.figure(1)
+    ax = fig.get_axes()[0]
+    set_q2cp_ticks(ax)
+    plt.axes(ax)
+    for move in moves:
+        tmp = bestdf[bestdf["sanmove"] == move]
+        ax.plot(tmp["TN"], tmp["Q"])
+        plt.xscale("log")
+    ax.legend(moves)
+    plt.title("Value vs Total Nodes")
+    plt.xlabel("Total Nodes")
+    plt.ylabel("Value")
+
+    # This plot can have multiple entries with the same index="N", so pivot fails.
+    ax = fig.get_axes()[1]
+    set_q2cp_ticks(ax)
+    plt.axes(ax)
+    for move in moves:
+        tmp = bestdf[bestdf["sanmove"] == move]
+        ax.plot(tmp["N"], tmp["Q"])
+        plt.xscale("log")
+    ax.legend(moves)
+    plt.title("Value vs Child Node Visits")
+    plt.xlabel("Child Node Visits")
+    plt.ylabel("Value")
+
     ax = fig.get_axes()[2]
     plt.axes(ax)
     for move in moves:
         tmp = bestdf[bestdf["sanmove"] == move]
-        tmp.plot.line(x="TN", y="N", logx=True, logy=True, ax=ax)
+        ax.plot(tmp["TN"], tmp["N"])
+        plt.xscale("log")
+        plt.yscale("log")
     ax.legend(moves)
     plt.title("Child Node Visits vs Total Nodes")
     plt.xlabel("Total Nodes")
     plt.ylabel("Child Nodes")
 
-    fig = plt.figure(1)
-    ax = fig.get_axes()[0]
-    plt.axes(ax)
-    for move in moves:
-        tmp = bestdf[bestdf["sanmove"] == move]
-        tmp.plot.line(x="TN", y="Q", logx=True, logy=False, ax=ax)
-    ax.legend(moves)
-    plt.title("Value vs Total Nodes")
-    plt.xlabel("Total Nodes")
-    plt.ylabel("Value")
-    set_q2cp_ticks(ax)
-
-    # This plot can have multiple entries with the same index="N", so pivot fails.
-    fig = plt.figure(1)
-    ax = fig.get_axes()[1]
-    plt.axes(ax)
-    for move in moves:
-        tmp = bestdf[bestdf["sanmove"] == move]
-        tmp.plot.line(x="N", y="Q", logx=True, logy=False, ax=ax)
-    ax.legend(moves)
-    plt.title("Value vs Child Node Visits")
-    plt.xlabel("Child Node Visits")
-    plt.ylabel("Value")
-    set_q2cp_ticks(ax)
-
-    fig = plt.figure(1)
     ax = fig.get_axes()[3]
     plt.axes(ax)
+    tnmax = df[df["TN"] == TNmax].sort_values("N", ascending=False)
     # TODO: Why do I have to specify the colors?
     # Can I at least tell it use the default cycle easier?
-    #best.plot.bar(x="sanmove", y="P", legend=False, ax=ax, colors=plt.rcParams['axes.prop_cycle'].by_key()['color'])
-    tnmax = df[df["TN"] == TNmax].sort_values("N", ascending=False)
-    print(tnmax)
-    tnmax.plot.bar(x="sanmove", y="P", legend=False, ax=ax, colors=plt.rcParams['axes.prop_cycle'].by_key()['color'])
+    ax.bar(tnmax["sanmove"], tnmax["P"], color=plt.rcParams['axes.prop_cycle'].by_key()['color'])
     plt.xlabel("")
     plt.title("Policy")
-    plt.tight_layout()
+    plt.tight_layout(h_pad=1.5)
     plt.show()
     plt.pause(0.001)
 
