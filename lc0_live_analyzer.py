@@ -224,12 +224,17 @@ if __name__ == "__main__":
 Requirements: Python3 and a bunch of packages.
 
 Add the following as your UCI chess engine:
-  lc0_live_analyzer.py --lc0 c:\path\\to\\lc0.exe
+  Linux:
+    lc0_live_analyzer.py --lc0 /path/to/lc0.exe
+  Windows:
+    c:\Python3\python.exe lc0_live_analyzer.py --lc0 c:\path\\to\\lc0.exe
 
-Configure other settings as normal, but:
-you must enable VerboseMoveStats!
-
-Then configure other settings as normal.
+Notes:
+* Configure other settings as normal, but:
+  * You must enable VerboseMoveStats!
+* Some GUIs (Arena) have two fields: command line and parameters aka args.
+  Put python.exe for command line, and the rest as parameters.
+* Some GUIs (Fritz) do not allow parameters at all, you must use e.g. InBetween for this.
 """
 
     parser = argparse.ArgumentParser(

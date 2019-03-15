@@ -100,9 +100,10 @@ Output files generated:
 
 activation_game.txt - pgn, uci, fen, and ascii board
 activation_layer_000.png - Inputs:
-    Our     P, N, B, R, Q, K
-    Their   P, N, B, R, Q, K
-    (Repeat 7 times for previous turns)
+    For 8 plies of hisory, most recent first:
+        Our     P, N, B, R, Q, K
+        Their   P, N, B, R, Q, K
+        Repetition plane
     We can O-O-O
     We can O-O
     They can O-O-O
