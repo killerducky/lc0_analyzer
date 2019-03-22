@@ -25,20 +25,67 @@ import sys
 COLS = 32
 ROWS = 8
 
+DIR_VECTORS = {'N': (0, 1), 'NE': (1, 1), 'E': (1, 0), 'SE': (1, -1),
+        'S':(0, -1), 'SW':(-1, -1), 'W': (-1, 0), 'NW': (-1, 1)}
+
+KNIGHT_DIR_VECTORS = {'N': (1, 2), 'NE': (2, 1), 'E': (2, -1), 'SE': (1, -2),
+        'S':(-1, -2), 'SW':(-2, -1), 'W': (-2, 1), 'NW': (-1, 2)}
+
+LOCMAP = []
+
+for direction in ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']:
+    for steps in range(1, 8):
+        x, y = DIR_VECTORS[direction]
+        x *= steps
+        y *= steps
+        #print(len(LOCMAP), "normal", direction, x, y)
+        LOCMAP.append((x, y))
+
+for direction in ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']:
+    x, y = KNIGHT_DIR_VECTORS[direction]
+    #print(len(LOCMAP), "knight", direction, x, y)
+    LOCMAP.append((x,y))
+
+LOCMAP.extend([(-5,8),(-4,8),(-3,8), (-1,8),(0,8),(1,8), (3,8),(4,8),(5,8)])
+
 def plot(data, layernum, board):
-    fig, ax = plt.subplots(ROWS, COLS, figsize=(32,8), subplot_kw={'title':"", 'xticks':[], 'yticks':[]}, frameon=False)
-    for e, d in enumerate(data):
-        # Data in logfile has side to move going down the board,
-        # so flip vertically.
-        d = np.flip(d, 0)
-        ax[e//COLS, e%COLS].imshow(d, norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=-50, vmax=50))
-        ax[e//COLS, e%COLS].get_xaxis().set_visible(False)
-        ax[e//COLS, e%COLS].get_yaxis().set_visible(False)
-    plt.tight_layout(w_pad=0.01, h_pad=0.01)
-    filename = "%s/activation_layer_%03d.png" % (args.savedir, layernum)
-    plt.savefig(filename, transparent=True)
-    plt.close("all")
-    print("saved " + filename)
+    if len(data) == 80:
+        fig, ax = plt.subplots(16, 15, figsize=(15*2,16*2), subplot_kw={'title':"", 'xticks':[], 'yticks':[]}, frameon=False)
+        for e, d in enumerate(data):
+            if e >= len(LOCMAP): break
+            # Data in logfile has side to move going down the board,
+            # so flip vertically.
+            d = np.flip(d, 0)
+            x, y = LOCMAP[e]
+            x += 7
+            y = -y + 8
+            #ax[y, x].imshow(d, norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=-50, vmax=50))
+            ax[y, x].imshow(d, norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=-1, vmax=1))
+            #ax[y, x].imshow(d, vmin=0, vmax=1)
+            #ax[y, x].imshow(d, norm=matplotlib.colors.Normalize(vmin=0., vmax=1.))
+            ax[y, x].get_xaxis().set_visible(False)
+            ax[y, x].get_yaxis().set_visible(False)
+        #plt.tight_layout(w_pad=0.01, h_pad=0.01)
+        filename = "%s/activation_layer_%03d.png" % (args.savedir, layernum)
+        plt.savefig(filename, transparent=True)
+        plt.close("all")
+        print("saved " + filename)
+    else:
+        fig, ax = plt.subplots(ROWS, COLS, figsize=(32,8), subplot_kw={'title':"", 'xticks':[], 'yticks':[]}, frameon=False)
+        for e, d in enumerate(data):
+            # Data in logfile has side to move going down the board,
+            # so flip vertically.
+            d = np.flip(d, 0)
+            #ax[e//COLS, e%COLS].imshow(d, norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=-50, vmax=50))
+            ax[e//COLS, e%COLS].imshow(d, norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=-1, vmax=1))
+            #ax[e//COLS, e%COLS].imshow(d, vmin=0, vmax=1)
+            ax[e//COLS, e%COLS].get_xaxis().set_visible(False)
+            ax[e//COLS, e%COLS].get_yaxis().set_visible(False)
+        plt.tight_layout(w_pad=0.01, h_pad=0.01)
+        filename = "%s/activation_layer_%03d.png" % (args.savedir, layernum)
+        plt.savefig(filename, transparent=True)
+        plt.close("all")
+        print("saved " + filename)
 
 def parse():
     alldata = []
